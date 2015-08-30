@@ -2,9 +2,15 @@
 
 import ply.ply.lex as lex
 
+AT_CONST = 'AT'
+
 # Ula tokens
 tokens = ('ID', 'FLOAT_LITERAL', 'WHITESPACE', 'COMMENT', 'AT', 'DOLLAR',
           'HASH', 'AND', 'EQUALS', 'OPEN_PARENTHESIS', 'CLOSE_PARENTHESIS')
+
+conversion_hash = {'AT': '@', 'DOLLAR': '$', 'HASH': '#', 'AND': '&',
+                   'EQUALS': '=', 'OPEN_PARENTHESIS': '(',
+                   'CLOSE_PARENTHESIS': ')'}
 
 # Regex
 t_ID = r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -34,9 +40,10 @@ def t_error(t):
 # Build lexer
 lexer = lex.lex()
 
-test_data = '''
+test_data = """
+#
 // Hello This is a comment
-'''
+"""
 
 lexer.input(test_data)
 
@@ -44,4 +51,6 @@ while True:
     tok = lexer.token()
     if not tok:
         break
-    print(tok)
+    if tok.type in conversion_hash:
+        tok.type = conversion_hash[tok.type]
+    print(tok.type)
