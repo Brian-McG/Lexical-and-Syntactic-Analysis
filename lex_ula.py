@@ -39,6 +39,7 @@ t_OPEN_PARENTHESIS = r'\('
 t_CLOSE_PARENTHESIS = r'\)'
 t_WHITESPACE = r'\s+'
 t_COMMENT = r'\/\*[^(\*\/);]+\*\/|\/\/.*'
+lexer = None
 
 
 def t_FLOAT_LITERAL(t):
@@ -65,14 +66,15 @@ def parse_input(input_data, output_file):
             token = lexer.token()
             if (not token):
                 break
-            if (token.type in conversion_hash):
-                token.type = conversion_hash[token.type]
-            if (token.type == ID_CONST or token.type == FLOAT_LITERAL_CONST):
-                output = '{},{}'.format(token.type, token.value)
+            token_type = token.type
+            if (token_type in conversion_hash):
+                token_type = conversion_hash[token_type]
+            if (token_type == ID_CONST or token_type == FLOAT_LITERAL_CONST):
+                output = '{},{}'.format(token_type, token.value)
                 print(output)
                 file_writer.write(output+'\n')
             else:
-                output = token.type
+                output = token_type
                 print(output)
                 file_writer.write(output+'\n')
 
