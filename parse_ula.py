@@ -5,11 +5,16 @@ import ply.ply.yacc as yacc
 import lex_command_arguments as args_
 import lex_ula
 
-# Workaround to whitespace issue - get confirmation on this issue!
-lex_ula.t_ignore = ' '
+# When lexing, ignore all comments and whitespace
+lex_ula.t_ignore_WHITESPACE = r'\s+'
+lex_ula.t_ignore_COMMENT = r'\/\*[^(\*\/);]+\*\/|\/\/.*'
+lex_ula.t_WHITESPACE = r'a^'
+lex_ula.t_COMMENT = r'a^'
 lex_ula.main()
 
 tokens = lex_ula.tokens
+
+INDENT_CONST = 2
 
 
 def p_start(p):
@@ -21,12 +26,11 @@ def p_program(p):
     '''program : program statement
                | statement'''
     if(len(p) == 2 and p[1] is not None):
-        p[0] = ('PROGRAM', p[1])
+        p[0] = ('Program', p[1])
     elif(len(p) == 3 and p[1] is not None and p[2] is not None):
-        print(p[2])
         p[0] = p[1] + (p[2],)
     elif(len(p) == 3 and p[1] is None and p[2] is not None):
-        p[0] = ('PROGRAM', p[2])
+        p[0] = ('Program', p[2])
     else:
         p[0] = p[1]
 
@@ -54,63 +58,47 @@ def p_statement(p):
 def p_expression_at(p):
     'expression : expression AT term'
     p[0] = ('AddExpression', p[1], p[3])
-    print('at: {}'.format(p[0]))
+
 
 def p_expression_dollar(p):
     'expression : expression DOLLAR term'
     p[0] = ('SubExpression', p[1], p[3])
-    print('dollar: {}'.format(p[0]))
+
 
 def p_exression_term(p):
     'expression : term'
     p[0] = p[1]
-    print('expressTerm: {}'.format(p[0]))
+
 
 def p_term_hash(p):
     'term : term HASH factor'
     p[0] = ('MulExpression', p[1], p[3])
-    print('hash: {}'.format(p[0]))
 
 
 def p_term_and(p):
     'term : term AND factor'
     p[0] = ('DivExpression', p[1], p[3])
-    print('and: {}'.format(p[0]))
 
 
 def p_term_factor(p):
     'term : factor'
     p[0] = p[1]
-    print('termFactor: {}'.format(p[0]))
 
 
 def p_factor_expression(p):
     'factor : OPEN_PARENTHESIS expression CLOSE_PARENTHESIS'
     p[0] = (p[2])
-    print('factorExpresS: {}'.format(p[0]))
-
 
 
 def p_factor_float(p):
     'factor : FLOAT_LITERAL'
     p[0] = ('FloatExpression', 'FLOAT_LITERAL,'+p[1])
-    print('floatExp: {}'.format(p[0]))
 
 
 def p_factor_id(p):
     'factor : ID'
     p[0] = ('IdentifierExpression', 'ID,'+p[1])
-    print('idExp: {}'.format(p[0]))
 
-
-#def p_factor_whitespace(p):
-#    '''factor : WHITESPACE'''
-#    p[0] = None
-
-
-#def p_factor_comment(p):
-#    '''factor : COMMENT'''
-#    p[0] = None
 
 # Ignore if input cannot be matched
 def p_error(p):
@@ -118,14 +106,37 @@ def p_error(p):
     print(p)
     None
 
+
 def parse_input(input_data, output_file):
     # Build lexer
     parser = yacc.yacc()
-    output_folder = 'output/'
-    output_location = output_folder + output_file + '.ast'
-    os.makedirs(output_folder, exist_ok=True)
-    result = parser.parse(input_data)
-    print(result)
+    if (__name__ == '__main__'):
+        # output_folder = 'output/'
+        output_location = output_file + '.ast'
+        # os.makedirs(output_folder, exist_ok=True)
+        result = parser.parse(input_data)
+        with open(output_location, 'w') as file_writer:
+            depth_first_search(result, file_writer)
+
+
+def depth_first_search(output, file_writer, depth=0):
+    index = 0
+    if (isinstance(output, tuple)):
+        for i in output:
+            if (index == 0):
+                depth_str = ' ' * depth
+                output_str = '{}{}'.format(depth_str, i)
+                print(output_str)
+                file_writer.write(output_str + '\n')
+            else:
+                depth_first_search(i, file_writer, depth + INDENT_CONST)
+            index += 1
+
+    else:
+        depth_str = ' ' * depth
+        output_str = '{}{}'.format(depth_str, output)
+        print(output_str)
+        file_writer.write(output_str + '\n')
 
 
 def main():

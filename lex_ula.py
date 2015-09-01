@@ -58,25 +58,27 @@ def parse_input(input_data, output_file):
     lexer = lex.lex()
     # Pass in the input
     lexer.input(input_data)
-    output_folder = 'output/'
-    output_location = output_folder + output_file + '.tkn'
-    os.makedirs(output_folder, exist_ok=True)
-    with open(output_location, 'w') as file_writer:
-        while (True):
-            token = lexer.token()
-            if (not token):
-                break
-            token_type = token.type
-            if (token_type in conversion_hash):
-                token_type = conversion_hash[token_type]
-            if (token_type == ID_CONST or token_type == FLOAT_LITERAL_CONST):
-                output = '{},{}'.format(token_type, token.value)
-                print(output)
-                file_writer.write(output+'\n')
-            else:
-                output = token_type
-                print(output)
-                file_writer.write(output+'\n')
+    if(__name__ == "__main__"):
+        # output_folder = 'output/'
+        output_location = output_file + '.tkn'
+        # os.makedirs(output_folder, exist_ok=True)
+        with open(output_location, 'w') as file_writer:
+            while (True):
+                token = lexer.token()
+                if (not token):
+                    break
+                token_type = token.type
+                if (token_type in conversion_hash):
+                    token_type = conversion_hash[token_type]
+                if (token_type == ID_CONST
+                        or token_type == FLOAT_LITERAL_CONST):
+                    output = '{},{}'.format(token_type, token.value)
+                    print(output)
+                    file_writer.write(output+'\n')
+                else:
+                    output = token_type
+                    print(output)
+                    file_writer.write(output+'\n')
 
 
 def main():

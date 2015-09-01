@@ -60,3 +60,5 @@ target/
 output
 parser.out
 parsetab.py
+*.ast
+*.tkn
