@@ -62,3 +62,4 @@ parser.out
 parsetab.py
 *.ast
 *.tkn
+*.zip

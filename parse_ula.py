@@ -1,7 +1,7 @@
 # Copyright 2015 [Brian Mc George]
 
 import os
-import ply.ply.yacc as yacc
+import ply.yacc as yacc
 import lex_command_arguments as args_
 import lex_ula
 
@@ -124,16 +124,16 @@ def depth_first_search(output, file_writer, depth=0):
     if (isinstance(output, tuple)):
         for i in output:
             if (index == 0):
-                depth_str = ' ' * depth
+                depth_str = '\t' * depth
                 output_str = '{}{}'.format(depth_str, i)
                 print(output_str)
                 file_writer.write(output_str + '\n')
             else:
-                depth_first_search(i, file_writer, depth + INDENT_CONST)
+                depth_first_search(i, file_writer, depth + 1)
             index += 1
 
     else:
-        depth_str = ' ' * depth
+        depth_str = '\t' * depth
         output_str = '{}{}'.format(depth_str, output)
         print(output_str)
         file_writer.write(output_str + '\n')

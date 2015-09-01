@@ -2,7 +2,7 @@
 
 import os
 import lex_command_arguments as args_
-import ply.ply.lex as lex
+import ply.lex as lex
 
 # Constants
 ID_CONST = 'ID'
