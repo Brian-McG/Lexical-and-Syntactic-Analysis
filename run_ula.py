@@ -3,6 +3,7 @@ from __future__ import print_function
 from ctypes import CFUNCTYPE, c_float
 import ir_ula
 import llvmlite.binding as llvm
+import lex_command_arguments as args_
 
 llvm.initialize()
 llvm.initialize_native_target()
@@ -11,9 +12,12 @@ llvm.initialize_native_asmprinter()
 intermediary_code = None
 engine = None
 module = None
+target_machine = None
+result = None
 
 
 def create_run_engine():
+    global target_machine
     # Create target machine
     target = llvm.Target.from_default_triple()
     target_machine = target.create_target_machine()
@@ -39,7 +43,13 @@ def main():
     global engine
     global module
     global intermediary_code
-    intermediary_code = ir_ula.main()
+    global result
+    args = args_.manage_arguments()
+    input_location = args.file_location[0]
+    output_location = input_location.partition('.')[0]
+    output_filename = output_location.split('/')[-1]
+
+    intermediary_code = str(ir_ula.main())
     engine = create_run_engine()
     module = compile_intermediary_code(engine, intermediary_code)
 
@@ -47,9 +57,13 @@ def main():
     function_ptr = engine.get_function_address("main")
 
     # Execute the function using ctypes
-    c_function = CFUNCTYPE(c_float)(func_ptr)
+    c_function = CFUNCTYPE(c_float)(function_ptr)
     result = c_function()
-    print(result)
+    if (__name__ == "__main__"):
+        output_location = output_filename + '.run'
+        with open(output_location, 'w') as file_writer:
+            file_writer.write(str(result) + '\n')
+        print(str(result))
 
 
 if(__name__ == "__main__"):
