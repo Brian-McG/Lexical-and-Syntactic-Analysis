@@ -64,3 +64,6 @@ parsetab.py
 *.tkn
 *.zip
 *.err
+*.ir
+*.run
+*.asm

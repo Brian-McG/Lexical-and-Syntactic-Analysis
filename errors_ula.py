@@ -65,6 +65,10 @@ def main():
             lex_ula.main(file_writer)
             result = parse_ula.main(file_writer)
             apply_semantic_analysis(file_writer, result)
+    else:
+        lex_ula.main()
+        result = parse_ula.main()
+        apply_semantic_analysis(None, result)
 
 
 if (__name__ == "__main__"):
