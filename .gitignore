@@ -63,3 +63,4 @@ parsetab.py
 *.ast
 *.tkn
 *.zip
+*.err

@@ -1,6 +1,7 @@
 # Copyright 2015 [Brian Mc George]
 
 import os
+import sys
 import ply.yacc as yacc
 import lex_command_arguments as args_
 import lex_ula
@@ -13,8 +14,8 @@ lex_ula.t_COMMENT = r'a^'
 lex_ula.main()
 
 tokens = lex_ula.tokens
-
-INDENT_CONST = 2
+parser = None
+error_file_writer = None
 
 
 def p_start(p):
@@ -24,7 +25,7 @@ def p_start(p):
 
 def p_program(p):
     '''program : program statement
-               | statement'''
+    | statement'''
     if(len(p) == 2 and p[1] is not None):
         p[0] = ('Program', p[1])
     elif(len(p) == 3 and p[1] is not None and p[2] is not None):
@@ -102,21 +103,25 @@ def p_factor_id(p):
 
 # Ignore if input cannot be matched
 def p_error(p):
-    print("Error:")
-    print(p)
-    None
+    global error_file_writer
+    output = "parse error on line {}".format(p.lineno)
+    print(output)
+    if(error_file_writer is not None):
+        error_file_writer.write(output + '\n')
+    sys.exit()
 
 
 def parse_input(input_data, output_file):
     # Build lexer
     parser = yacc.yacc()
+    result = parser.parse(input_data)
     if (__name__ == '__main__'):
         # output_folder = 'output/'
         output_location = output_file + '.ast'
         # os.makedirs(output_folder, exist_ok=True)
-        result = parser.parse(input_data)
         with open(output_location, 'w') as file_writer:
             depth_first_search(result, file_writer)
+    return result
 
 
 def depth_first_search(output, file_writer, depth=0):
@@ -139,7 +144,9 @@ def depth_first_search(output, file_writer, depth=0):
         file_writer.write(output_str + '\n')
 
 
-def main():
+def main(error_writer=None):
+    global error_file_writer
+    error_file_writer = error_writer
     args = args_.manage_arguments()
     input_location = args.file_location[0]
     if os.path.isfile(input_location):
@@ -147,9 +154,9 @@ def main():
             input_data = file_reader.read()
             output_location = input_location.partition('.')[0]
             output_filename = output_location.split('/')[-1]
-            parse_input(input_data, output_filename)
+            return parse_input(input_data, output_filename)
     else:
         print("File " + input_location + " does not exist.")
-
+    return None
 if __name__ == "__main__":
     main()

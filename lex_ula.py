@@ -1,6 +1,7 @@
 # Copyright 2015 [Brian Mc George]
 
 import os
+import sys
 import lex_command_arguments as args_
 import ply.lex as lex
 
@@ -40,6 +41,7 @@ t_CLOSE_PARENTHESIS = r'\)'
 t_WHITESPACE = r'\s+'
 t_COMMENT = r'\/\*[^(\*\/);]+\*\/|\/\/.*'
 lexer = None
+error_file_writer = None
 
 
 def t_FLOAT_LITERAL(t):
@@ -49,8 +51,11 @@ def t_FLOAT_LITERAL(t):
 
 # Handle errors
 def t_error(t):
-    print("illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+    output = "lexical error on line {}".format(t.lexer.lineno)
+    print(output)
+    if(error_file_writer is not None):
+        error_file_writer.write(output + '\n')
+    sys.exit()
 
 
 def parse_input(input_data, output_file):
@@ -81,7 +86,9 @@ def parse_input(input_data, output_file):
                     file_writer.write(output+'\n')
 
 
-def main():
+def main(error_writer=None):
+    global error_file_writer
+    error_file_writer = error_writer
     args = args_.manage_arguments()
     input_location = args.file_location[0]
     if os.path.isfile(input_location):
